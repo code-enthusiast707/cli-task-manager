@@ -3,20 +3,18 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <ctime>
 
 using namespace std;
 using namespace constants;
-
-char startQuote[50] = "\"";
-const char endQuote[5] = "\"";
 
 struct Task
 {
       int id;
       char taskName[50];
       char status[20];
-      char *createdAt[20];
-      char *updatedAt[20];
+      char createdAt[50];
+      char updatedAt[50];
 };
 
 vector<Task> getTasks(string data)
@@ -35,11 +33,14 @@ vector<Task> getTasks(string data)
 
             int id;
             char taskName[50];
-            sscanf(taskBuff, "\"id\":\"%d\",\"taskName\":%s", &id, taskName);
+            char createdAt[50];
+            char updatedAt[50];
+            sscanf(taskBuff, "\"id\":\"%d\",\"taskName\":\"%[^\"]\",\"createdAt\":\"%[0-9- :]\",\"updatedAt\":\"%[0-9- :]\"", &id, taskName, createdAt, updatedAt);
             struct Task newTask;
             newTask.id = id;
             strcpy(newTask.taskName, taskName);
-
+            strcpy(newTask.createdAt, createdAt);
+            strcpy(newTask.updatedAt, updatedAt);
             res.push_back(newTask);
             if (rightIndex >= data.length() - 1)
                   break;
@@ -73,15 +74,22 @@ void handleAddAction(char *taskName)
       {
             newTask.id = tasks.back().id + 1;
       }
-      strcpy(newTask.taskName, strcat(startQuote, strcat(taskName, endQuote)));
+      strcpy(newTask.taskName, taskName);
+
+      time_t currentTime = time(nullptr);
+      tm *localTime = localtime(&currentTime);
+      char formattedTime[50];
+      strftime(formattedTime, 50, "%F %R", localTime);
+      strcpy(newTask.createdAt, formattedTime);
+      strcpy(newTask.updatedAt, formattedTime);
 
       tasks.push_back(newTask);
 
       string taskBuff = "";
       for (int i = 0; i < tasks.size(); i++)
       {
-            char currentTask[200];
-            sprintf(currentTask, "{\"id\":\"%d\",\"taskName\":%s}", tasks[i].id, tasks[i].taskName);
+            char currentTask[256];
+            sprintf(currentTask, "{\"id\":\"%d\",\"taskName\":\"%s\",\"createdAt\":\"%s\",\"updatedAt\":\"%s\"}", tasks[i].id, tasks[i].taskName, tasks[i].createdAt, tasks[i].updatedAt);
             taskBuff += currentTask;
             if (i != tasks.size() - 1)
             {
@@ -108,6 +116,5 @@ int main(int argc, char *argv[])
       {
             cout << "Incorrect action\n";
       }
-      cout << "\n";
       return 0;
 }
