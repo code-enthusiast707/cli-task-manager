@@ -12,7 +12,7 @@ struct Task
 {
       int id;
       char taskName[50];
-      char status[20];
+      int status;
       char createdAt[50];
       char updatedAt[50];
 };
@@ -31,13 +31,12 @@ vector<Task> getTasks(string data)
             currentTask.copy(taskBuff, currentTask.size());
             taskBuff[currentTask.size()] = '\0';
 
-            int id;
-            char taskName[50];
-            char createdAt[50];
-            char updatedAt[50];
-            sscanf(taskBuff, "\"id\":\"%d\",\"taskName\":\"%[^\"]\",\"createdAt\":\"%[0-9- :]\",\"updatedAt\":\"%[0-9- :]\"", &id, taskName, createdAt, updatedAt);
+            int id, status;
+            char taskName[50], createdAt[50], updatedAt[50];
+            sscanf(taskBuff, "\"id\":\"%d\",\"status\":\"%d\",\"taskName\":\"%[^\"]\",\"createdAt\":\"%[0-9- :]\",\"updatedAt\":\"%[0-9- :]\"", &id, &status, taskName, createdAt, updatedAt);
             struct Task newTask;
             newTask.id = id;
+            newTask.status = status;
             strcpy(newTask.taskName, taskName);
             strcpy(newTask.createdAt, createdAt);
             strcpy(newTask.updatedAt, updatedAt);
@@ -75,6 +74,7 @@ void handleAddAction(char *taskName)
             newTask.id = tasks.back().id + 1;
       }
       strcpy(newTask.taskName, taskName);
+      newTask.status = 0;
 
       time_t currentTime = time(nullptr);
       tm *localTime = localtime(&currentTime);
@@ -89,7 +89,7 @@ void handleAddAction(char *taskName)
       for (int i = 0; i < tasks.size(); i++)
       {
             char currentTask[256];
-            sprintf(currentTask, "{\"id\":\"%d\",\"taskName\":\"%s\",\"createdAt\":\"%s\",\"updatedAt\":\"%s\"}", tasks[i].id, tasks[i].taskName, tasks[i].createdAt, tasks[i].updatedAt);
+            sprintf(currentTask, "{\"id\":\"%d\",\"status\":\"%d\",\"taskName\":\"%s\",\"createdAt\":\"%s\",\"updatedAt\":\"%s\"}", tasks[i].id, tasks[i].status, tasks[i].taskName, tasks[i].createdAt, tasks[i].updatedAt);
             taskBuff += currentTask;
             if (i != tasks.size() - 1)
             {
