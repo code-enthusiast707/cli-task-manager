@@ -17,8 +17,17 @@ struct Task
       char updatedAt[50];
 };
 
-vector<Task> getTasks(string data)
+vector<Task> getAllTasks()
 {
+      string data(readFileContent());
+      int index = data.find_first_of(':');
+      if (index < 0)
+      {
+            cout << "File is empty\n";
+            return {};
+      }
+      data = data.substr(index + 2, data.substr(index + 2).length() - 2);
+
       vector<Task> res;
       while (data.find_first_of(openBrace) != data.npos && data.find_first_of(closeBrace) != data.npos)
       {
@@ -48,22 +57,8 @@ vector<Task> getTasks(string data)
       return res;
 }
 
-vector<Task> readData()
+string addTask(vector<Task> tasks, char *taskName)
 {
-      string str(readFileContent());
-      int index = str.find_first_of(':');
-      if (index < 0)
-      {
-            cout << "File is empty\n";
-            return {};
-      }
-      str = str.substr(index + 2, str.substr(index + 2).length() - 2);
-      return getTasks(str);
-}
-
-void handleAddAction(char *taskName)
-{
-      vector<Task> tasks = readData();
       Task newTask;
       if (tasks.empty())
       {
@@ -96,7 +91,7 @@ void handleAddAction(char *taskName)
                   taskBuff += ",";
             }
       }
-      writeFileContent(taskBuff);
+      return taskBuff;
 }
 
 int main(int argc, char *argv[])
@@ -107,14 +102,17 @@ int main(int argc, char *argv[])
             return 1;
       }
 
+      vector<Task> tasks = getAllTasks();
+      string res = "";
       string addStr = "add";
       if (addStr.compare(argv[1]) == 0)
       {
-            handleAddAction(argv[2]);
+            res = addTask(tasks, argv[2]);
       }
       else
       {
             cout << "Incorrect action\n";
       }
+      writeFileContent(res);
       return 0;
 }
