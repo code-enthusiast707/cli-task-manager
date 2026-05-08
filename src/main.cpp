@@ -17,6 +17,29 @@ struct Task
       char updatedAt[50];
 };
 
+void setCurrentTime(char *currentTime)
+{
+      time_t timeObj = time(nullptr);
+      tm *localTime = localtime(&timeObj);
+      strftime(currentTime, 50, "%F %R", localTime);
+}
+
+string tasksToString(vector<Task> tasks)
+{
+      string taskBuff = "";
+      for (int i = 0; i < tasks.size(); i++)
+      {
+            char currentTask[256];
+            sprintf(currentTask, "{\"id\":\"%d\",\"status\":\"%d\",\"taskName\":\"%s\",\"createdAt\":\"%s\",\"updatedAt\":\"%s\"}", tasks[i].id, tasks[i].status, tasks[i].taskName, tasks[i].createdAt, tasks[i].updatedAt);
+            taskBuff += currentTask;
+            if (i != tasks.size() - 1)
+            {
+                  taskBuff += ",";
+            }
+      }
+      return taskBuff;
+}
+
 vector<Task> getAllTasks()
 {
       string data(readFileContent());
@@ -71,27 +94,31 @@ string addTask(vector<Task> tasks, char *taskName)
       strcpy(newTask.taskName, taskName);
       newTask.status = 0;
 
-      time_t currentTime = time(nullptr);
-      tm *localTime = localtime(&currentTime);
-      char formattedTime[50];
-      strftime(formattedTime, 50, "%F %R", localTime);
-      strcpy(newTask.createdAt, formattedTime);
-      strcpy(newTask.updatedAt, formattedTime);
+      char currentTime[50];
+      setCurrentTime(currentTime);
+      strcpy(newTask.createdAt, currentTime);
+      strcpy(newTask.updatedAt, currentTime);
 
       tasks.push_back(newTask);
 
-      string taskBuff = "";
+      return tasksToString(tasks);
+}
+
+string updateTask(vector<Task> tasks, int taskId, char *taskName)
+{
       for (int i = 0; i < tasks.size(); i++)
       {
-            char currentTask[256];
-            sprintf(currentTask, "{\"id\":\"%d\",\"status\":\"%d\",\"taskName\":\"%s\",\"createdAt\":\"%s\",\"updatedAt\":\"%s\"}", tasks[i].id, tasks[i].status, tasks[i].taskName, tasks[i].createdAt, tasks[i].updatedAt);
-            taskBuff += currentTask;
-            if (i != tasks.size() - 1)
+            if (tasks[i].id == taskId)
             {
-                  taskBuff += ",";
+                  strcpy(tasks[i].taskName, taskName);
+                  char currentTime[50];
+                  setCurrentTime(currentTime);
+                  strcpy(tasks[i].updatedAt, currentTime);
+                  break;
             }
       }
-      return taskBuff;
+
+      return tasksToString(tasks);
 }
 
 int main(int argc, char *argv[])
@@ -104,10 +131,14 @@ int main(int argc, char *argv[])
 
       vector<Task> tasks = getAllTasks();
       string res = "";
-      string addStr = "add";
+      string addStr = "add", uptStr = "update";
       if (addStr.compare(argv[1]) == 0)
       {
             res = addTask(tasks, argv[2]);
+      }
+      else if (uptStr.compare(argv[1]) == 0)
+      {
+            res = updateTask(tasks, atoi(argv[2]), argv[3]);
       }
       else
       {
