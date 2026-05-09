@@ -121,6 +121,20 @@ string updateTask(vector<Task> tasks, int taskId, char *taskName)
       return tasksToString(tasks);
 }
 
+string deleteTask(vector<Task> tasks, int taskId)
+{
+      for (auto it = tasks.begin(); it != tasks.end(); it++)
+      {
+            if (it->id == taskId)
+            {
+                  tasks.erase(it);
+                  break;
+            }
+      }
+
+      return tasksToString(tasks);
+}
+
 int main(int argc, char *argv[])
 {
       if (argc < 2)
@@ -131,7 +145,7 @@ int main(int argc, char *argv[])
 
       vector<Task> tasks = getAllTasks();
       string res = "";
-      string addStr = "add", uptStr = "update";
+      string addStr = "add", uptStr = "update", delStr = "delete";
       if (addStr.compare(argv[1]) == 0)
       {
             res = addTask(tasks, argv[2]);
@@ -140,9 +154,14 @@ int main(int argc, char *argv[])
       {
             res = updateTask(tasks, atoi(argv[2]), argv[3]);
       }
+      else if (delStr.compare(argv[1]) == 0)
+      {
+            res = deleteTask(tasks, atoi(argv[2]));
+      }
       else
       {
             cout << "Incorrect action\n";
+            return 1;
       }
       writeFileContent(res);
       return 0;
